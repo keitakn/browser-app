@@ -34,7 +34,7 @@ await page.observe({
   instruction: "the instruction to execute",
   returnAction: true, // Return action object for act() method
   iframes: false, // Set to true if content exists within iframe
-  modelName: "gpt-4o", // Specify model for observation
+  modelName: "gpt-5", // Specify model for observation
   modelClientOptions: { apiKey: process.env.OPENAI_API_KEY }, // Model client options
   domSettleTimeoutMs: 30000 // Wait for DOM to settle
 });
