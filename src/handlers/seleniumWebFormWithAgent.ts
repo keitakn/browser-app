@@ -97,40 +97,44 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
   const cuaViewport = { width: 1024, height: 768 };
 
   // --- コンストラクタは公式の ConstructorParams で定義 ---
-  let ctor: ConstructorParams;
-  if (isLocal) {
-    ctor = {
-      env: "LOCAL",
-      modelName: "openai/gpt-5",
-      modelClientOptions,
-      localBrowserLaunchOptions: {
-        headless: false,
-        devtools: true,
-      } as LocalBrowserLaunchOptions,
-      verbose: 2,
-      logger,
-      logInferenceToFile: true, // ローカルのみ
-    };
-  } else {
-    const projectId = process.env.BROWSERBASE_PROJECT_ID!;
-    const bbKey = process.env.BROWSERBASE_API_KEY;
-    ctor = {
-      env: "BROWSERBASE",
-      modelName: "openai/gpt-5",
-      modelClientOptions,
-      projectId,
-      browserbaseSessionCreateParams: {
+  const ctor: ConstructorParams = (() => {
+    if (isLocal) {
+      return {
+        env: "LOCAL",
+        modelName: "openai/gpt-5",
+        modelClientOptions,
+        localBrowserLaunchOptions: {
+          headless: false,
+          devtools: true,
+        } as LocalBrowserLaunchOptions,
+        verbose: 2,
+        logger,
+        logInferenceToFile: true, // ローカルのみ
+      };
+    } else {
+      const projectId = process.env.BROWSERBASE_PROJECT_ID;
+      if (!projectId) {
+        throw new Error("BROWSERBASE_PROJECT_ID is required for BROWSERBASE environment");
+      }
+      const bbKey = process.env.BROWSERBASE_API_KEY;
+      return {
+        env: "BROWSERBASE",
+        modelName: "openai/gpt-5",
+        modelClientOptions,
         projectId,
-        browserSettings: {
-          viewport: cuaViewport,
-          blockAds: true,
-        },
-      } as Browserbase.SessionCreateParams,
-      ...(bbKey ? { apiKey: bbKey } : {}),
-      verbose: 2,
-      logger,
-    };
-  }
+        browserbaseSessionCreateParams: {
+          projectId,
+          browserSettings: {
+            viewport: cuaViewport,
+            blockAds: true,
+          },
+        } as Browserbase.SessionCreateParams,
+        ...(bbKey ? { apiKey: bbKey } : {}),
+        verbose: 2,
+        logger,
+      };
+    }
+  })();
 
   const sh = new Stagehand(ctor);
   await sh.init();

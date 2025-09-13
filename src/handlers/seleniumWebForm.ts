@@ -63,32 +63,36 @@ export async function seleniumWebFormHandler(c: Context) {
   const isLocal = (process.env.STAGEHAND_ENV ?? "LOCAL").toUpperCase() === "LOCAL";
   const modelClientOptions: ClientOptions = { apiKey: openaiApiKey };
 
-  let ctor: StagehandConstructorOptions;
-  if (isLocal) {
-    ctor = {
-      env: "LOCAL",
-      modelName: "openai/gpt-5",
-      modelClientOptions,
-      localBrowserLaunchOptions: { headless: false, devtools: true },
-    };
-  } else {
-    const projectId = process.env.BROWSERBASE_PROJECT_ID!;
-    const bbKey = process.env.BROWSERBASE_API_KEY;
-    ctor = {
-      env: "BROWSERBASE",
-      modelName: "openai/gpt-5",
-      modelClientOptions,
-      projectId,
-      browserbaseSessionCreateParams: {
+  const ctor: StagehandConstructorOptions = (() => {
+    if (isLocal) {
+      return {
+        env: "LOCAL",
+        modelName: "openai/gpt-5",
+        modelClientOptions,
+        localBrowserLaunchOptions: { headless: false, devtools: true },
+      };
+    } else {
+      const projectId = process.env.BROWSERBASE_PROJECT_ID;
+      if (!projectId) {
+        throw new Error("BROWSERBASE_PROJECT_ID is required for BROWSERBASE environment");
+      }
+      const bbKey = process.env.BROWSERBASE_API_KEY;
+      return {
+        env: "BROWSERBASE",
+        modelName: "openai/gpt-5",
+        modelClientOptions,
         projectId,
-        browserSettings: {
-          viewport: { width: 1920, height: 1080 }, // Browserbase対応サイズ
-          blockAds: true,
+        browserbaseSessionCreateParams: {
+          projectId,
+          browserSettings: {
+            viewport: { width: 1920, height: 1080 }, // Browserbase対応サイズ
+            blockAds: true,
+          },
         },
-      },
-      ...(bbKey ? { apiKey: bbKey } : {}),
-    };
-  }
+        ...(bbKey ? { apiKey: bbKey } : {}),
+      };
+    }
+  })();
 
   const sh = new Stagehand(ctor);
   await sh.init();
