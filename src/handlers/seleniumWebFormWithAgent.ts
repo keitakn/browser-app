@@ -1,10 +1,6 @@
 // src/handlers/seleniumWebForm.ts
 import type { Context } from "hono";
-import {
-  Stagehand,
-  type ConstructorParams,
-  type LogLine,
-} from "@browserbasehq/stagehand";
+import { Stagehand, type ConstructorParams, type LogLine } from "@browserbasehq/stagehand";
 import type Browserbase from "@browserbasehq/sdk";
 
 /** リクエストボディ */
@@ -34,13 +30,7 @@ interface LocalBrowserLaunchOptions {
 }
 
 /** API レスポンスに載せる公開ログ（LLM詳細はレダクト） */
-type PublicCategory =
-  | "browser"
-  | "action"
-  | "llm"
-  | "error"
-  | "stagehand"
-  | "cache";
+type PublicCategory = "browser" | "action" | "llm" | "error" | "stagehand" | "cache";
 interface PublicLogLine {
   category: PublicCategory;
   message: string;
@@ -58,11 +48,9 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
   if (!body?.text) return c.json({ ok: false, error: "text is required" }, 400);
 
   const openaiApiKey = process.env.OPENAI_API_KEY;
-  if (!openaiApiKey)
-    return c.json({ ok: false, error: "OPENAI_API_KEY is missing" }, 500);
+  if (!openaiApiKey) return c.json({ ok: false, error: "OPENAI_API_KEY is missing" }, 500);
 
-  const isLocal =
-    (process.env.STAGEHAND_ENV ?? "LOCAL").toUpperCase() === "LOCAL";
+  const isLocal = (process.env.STAGEHAND_ENV ?? "LOCAL").toUpperCase() === "LOCAL";
   const modelClientOptions: ClientOptions = { apiKey: openaiApiKey };
 
   // ===== 構造化ログ収集（aux が空ならキーごと省略 / timestamp は必ず string 化）=====
@@ -90,8 +78,7 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
 
     const auxiliary: PublicLogLine["auxiliary"] = {};
     if (line.auxiliary?.url) auxiliary.url = String(line.auxiliary.url);
-    if (line.auxiliary?.executionTime)
-      auxiliary.executionTime = line.auxiliary.executionTime; // unknown として保持
+    if (line.auxiliary?.executionTime) auxiliary.executionTime = line.auxiliary.executionTime; // unknown として保持
 
     const base: Omit<PublicLogLine, "auxiliary"> = {
       category: normalizeCategory(line.category as string),
@@ -183,16 +170,11 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
 
   // === サーバーログに actions を出力（PIIに注意） ===
   try {
-    console.info(
-      "[agent.actions]",
-      JSON.stringify(agentResult.actions ?? [], null, 2)
-    );
+    console.info("[agent.actions]", JSON.stringify(agentResult.actions ?? [], null, 2));
   } catch {
     console.info(
       "[agent.actions] (non-serializable)",
-      Array.isArray(agentResult.actions)
-        ? agentResult.actions.length
-        : 0
+      Array.isArray(agentResult.actions) ? agentResult.actions.length : 0,
     );
   }
 
@@ -247,11 +229,11 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
         success: agentResult.success,
         message: agentResult.message,
         completed: agentResult.completed,
-        usage,   // { input_tokens, output_tokens, inference_time_ms }
+        usage, // { input_tokens, output_tokens, inference_time_ms }
         actions, // 実行アクション
         logs: collectedLogs,
       },
     },
-    200
+    200,
   );
 }

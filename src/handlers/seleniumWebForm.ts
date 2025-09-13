@@ -123,14 +123,18 @@ export async function seleniumWebFormHandler(c: Context) {
     const defaultCk = page.getByLabel("Default checkbox");
     const now = await defaultCk.isChecked();
     if (now !== body.checkDefaultCheckbox) {
-      body.checkDefaultCheckbox ? await defaultCk.check({ force: true }) : await defaultCk.uncheck({ force: true });
+      body.checkDefaultCheckbox
+        ? await defaultCk.check({ force: true })
+        : await defaultCk.uncheck({ force: true });
     }
   }
 
   // radio
   if (body.radio) {
     const target =
-      body.radio === "checked" ? page.getByLabel("Checked radio") : page.getByLabel("Default radio");
+      body.radio === "checked"
+        ? page.getByLabel("Checked radio")
+        : page.getByLabel("Default radio");
     await target.check({ force: true });
   }
 
@@ -197,7 +201,8 @@ export async function seleniumWebFormHandler(c: Context) {
   if (body.checkDefaultCheckbox !== undefined) {
     const count = params.getAll("my-check").length;
     const expectedCount = body.checkDefaultCheckbox ? 2 : 1;
-    if (count !== expectedCount) mismatches.push(`my-check count: expected ${expectedCount}, got ${count}`);
+    if (count !== expectedCount)
+      mismatches.push(`my-check count: expected ${expectedCount}, got ${count}`);
   }
 
   await page.waitForTimeout(body.waitAfterSubmitMs ?? 2_000);
@@ -212,6 +217,6 @@ export async function seleniumWebFormHandler(c: Context) {
       url: currentUrl,
       assertions: { urlValuesOk: mismatches.length === 0, mismatches },
     },
-    200
+    200,
   );
 }
