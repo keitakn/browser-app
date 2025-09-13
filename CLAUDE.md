@@ -84,7 +84,7 @@ const StagehandConfig = {
   projectId: process.env.BROWSERBASE_PROJECT_ID, // Browserbase project ID
   verbose: 1, // Logging verbosity (0-2, 0: silent, 1: info, 2: debug)
   logger: (logLine: LogLine) => console.log(`[${logLine.category}] ${logLine.message}`), // Custom logger function
-  modelName: "openai/gpt-4o", // AI model to use (available: gpt-4o, claude-3-7-sonnet-latest, gemini-2.0-flash, o3-mini, etc.)
+  modelName: "openai/gpt-5", // AI model to use (available: gpt-5, claude-sonnet-4-20250514, gemini-2.0-flash, o3-mini, etc.)
   modelClientOptions: {
     apiKey: process.env.OPENAI_API_KEY, // OpenAI API key
   },
@@ -129,7 +129,7 @@ Advanced usage with full parameters:
 ```typescript
 await page.act({
   action: "Click the sign in button",
-  modelName: "gpt-4o", // Specify model for this action
+  modelName: "gpt-5", // Specify model for this action
   modelClientOptions: { apiKey: process.env.OPENAI_API_KEY }, // Model client options
   variables: { /* variable substitutions */ },
   iframes: false, // Set to true if target element is in iframe
@@ -178,7 +178,7 @@ const data = await page.extract({
   schema: z.object({ text: z.string() }),
   iframes: false, // Set to true if content exists within iframe
   selector: "//button[@class='signin']", // XPath to narrow extraction scope
-  modelName: "gpt-4o", // Specify model for extraction
+  modelName: "gpt-5", // Specify model for extraction
   modelClientOptions: { apiKey: process.env.OPENAI_API_KEY }, // Model client options
   domSettleTimeoutMs: 30000 // Wait for DOM to settle
 });
@@ -237,7 +237,7 @@ const agent = stagehand.agent();
 // OpenAI agent with latest models
 const agent = stagehand.agent({
   provider: "openai",
-  model: "gpt-4o", // Use latest GPT-4o models: gpt-4o, gpt-4o-november-snapshot
+  model: "gpt-5", // Use latest GPT-4o models: gpt-4o, gpt-4o-november-snapshot
   instructions: "You are a helpful assistant that can use a web browser.",
   options: {
     apiKey: process.env.OPENAI_API_KEY
@@ -247,7 +247,7 @@ const agent = stagehand.agent({
 // Anthropic agent with latest models
 const agent = stagehand.agent({
   provider: "anthropic",
-  model: "claude-3-7-sonnet-latest", // Use latest Claude models
+  model: "claude-sonnet-4-20250514", // Use latest Claude models
   instructions: "You are a helpful assistant that can use a web browser.",
   options: {
     apiKey: process.env.ANTHROPIC_API_KEY
@@ -303,3 +303,164 @@ const data = await page.extract({
 - Use environment variables for API keys (see `.env.example`)
 - Implement main automation logic in functions that accept `{ page, context, stagehand }`
 - Use TypeScript with proper imports from `@browserbasehq/stagehand`
+
+## Coding Standards
+
+### Custom Error Classes
+
+Always define custom error classes using static blocks to set the prototype name:
+
+```typescript
+class MyError extends Error {
+  static {
+    this.prototype.name = "MyError";
+  }
+}
+
+// With custom properties
+class ParseError extends Error {
+  static {
+    this.prototype.name = "ParseError";
+  }
+  constructor(message = "", options = {}) {
+    const { loc, ...rest } = options;
+    // cause is passed to Error when present
+    super(message, rest);
+    this.loc = loc;
+  }
+}
+```
+
+This approach ensures proper error name handling across different JavaScript environments.
+Reference: https://www.wantedly.com/companies/wantedly/post_articles/492456
+
+### Variable Naming Conventions
+
+#### Avoid Generic Names
+
+Never use `data` as a variable name. Always use more specific names that describe what the data represents:
+
+- ❌ `data`, `validatedData`
+- ✅ `itinerary`, `validatedItinerary`, `responseBody`, `userProfile`
+
+#### Use Camel Case
+
+TypeScript/JavaScript code should use camelCase for variable and property names:
+
+- ❌ `user_id`, `users_ids`, `enable_web_search`
+- ✅ `userId`, `userIds`, `enableWebSearch`
+
+Exception: When interfacing with external APIs that require snake_case, perform conversion at the API boundary layer only. Keep internal code consistently in camelCase.
+
+### API Response Handling
+
+Don't pass API response types directly to components. Instead:
+
+1. Define domain types with camelCase properties
+2. Convert API responses (often snake_case) to domain types at the API layer
+3. Pass domain types to components
+
+This maintains clean separation between external API contracts and internal application code.
+
+### Zod v4 Usage Guidelines
+
+Use top-level functions for string formats instead of method-style validators. This approach is more concise and tree-shakable.
+
+#### String Format Validators
+
+All "string formats" (email, etc.) have been promoted to top-level functions on the z module. The method equivalents (z.string().email(), etc.) are deprecated and will be removed in the next major version.
+
+**Use top-level functions (v4 style):**
+
+```typescript
+// ✅ Correct (v4 style)
+z.email();
+z.url();
+z.uuid();
+z.ipv4();
+z.ipv6();
+z.cidrv4();
+z.cidrv6();
+z.e164();
+z.base64();
+z.base64url();
+z.jwt();
+z.lowercase();
+z.iso.date();
+z.iso.datetime();
+z.iso.duration();
+z.iso.time();
+```
+
+**Don't use method-style (deprecated):**
+
+```typescript
+// ❌ Deprecated (v3 style)
+z.string().email();
+z.string().url();
+z.string().uuid();
+z.string().ip();
+// etc.
+```
+
+#### Example Usage
+
+```typescript
+// ✅ Correct v4 usage
+const EmailSchema = z.email();
+const UrlSchema = z.url();
+const UserSchema = z.object({
+  email: z.email(),
+  website: z.url().optional(),
+  name: z.string().min(1),
+});
+
+// ❌ Deprecated v3 usage
+const EmailSchema = z.string().email();
+const UrlSchema = z.string().url();
+```
+
+Reference: https://zod.dev/v4#top-level-string-formats
+
+### Variable Declaration Rules
+
+**Use `const` exclusively - `let` is prohibited**
+
+All variables must be declared with `const` to enforce immutability and prevent reassignment. This helps prevent bugs and makes code more predictable.
+
+#### Examples
+
+```typescript
+// ❌ Never use let
+let validatedResult;
+try {
+  validatedResult = schema.parse(input);
+} catch (error) {
+  validatedResult = defaultValue;
+}
+
+// ✅ Use const with conditional assignment
+const validatedResult = (() => {
+  try {
+    return schema.parse(input);
+  } catch (error) {
+    return defaultValue;
+  }
+})();
+
+// ✅ Use const for all declarations
+const userId = formData.get("userId") as string;
+const profile = parseInt(formData.get("profile") as string, 10);
+const userIds = formData.getAll("userIds") as string[];
+```
+
+When building objects conditionally, create a mutable object locally and then assign it to a const:
+
+```typescript
+// ✅ Build mutable object, then assign to const
+const mutableValidationErrors: ValidationErrors = {};
+for (const issue of error.issues) {
+  mutableValidationErrors[issue.path[0]] = issue.message;
+}
+const validationErrors = mutableValidationErrors; // Final immutable reference
+```
