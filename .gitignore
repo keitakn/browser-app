@@ -113,9 +113,6 @@ next-env.d.ts
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# prompt
-prompt/
-
 # serena-mcp
 .serena/memories/
 .serena/cache/
@@ -129,4 +126,14 @@ prompt/
 # direnv
 .envrc
 
-node_modules
+# Claude Codeにわたすプロンプト置き場
+prompt/
+
+# Claude Codeの個別設定ファイル
+.claude/settings.local.json
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
