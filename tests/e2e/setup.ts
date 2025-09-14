@@ -1,13 +1,13 @@
 import { beforeAll } from "vitest";
 
 beforeAll(async () => {
-  // direnvで設定された環境変数を確認
+  // 必要な環境変数が設定されているか確認
   const requiredEnvVars = ["OPENAI_API_KEY"];
   const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
 
   if (missingVars.length > 0) {
     throw new Error(
-      `Missing required environment variables: ${missingVars.join(", ")}. Please ensure direnv is loaded.`,
+      `Missing required environment variables: ${missingVars.join(", ")}.`,
     );
   }
 
