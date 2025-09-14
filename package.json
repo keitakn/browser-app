@@ -8,7 +8,10 @@
     "prettier": "prettier --write --log-level=warn '**/!(*.min|*-lock).{md,mdx}'",
     "lint": "biome lint --write . && npm run lint:prettier",
     "format": "biome format --write . && npm run prettier",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:e2e": "vitest run",
+    "test:watch": "vitest watch"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.888.0",
@@ -25,6 +28,7 @@
     "@types/node": "24.3.1",
     "prettier": "3.6.2",
     "tsx": "4.20.5",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
   }
 }

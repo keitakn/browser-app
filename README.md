@@ -124,3 +124,9 @@ npm run build
 ```bash
 npm run start
 ```
+
+### テスト（サーバーが起動している前提）
+
+```bash
+npm run test:e2e
+```
