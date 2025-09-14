@@ -77,3 +77,35 @@ http://localhost:8080/selenium/webform/agent | jq
 以下のSelenium公式フォームを動作確認の為に利用しています。
 
 https://www.selenium.dev/selenium/web/web-form.html
+
+## npm scripts
+
+### Linterの実行
+
+```bash
+npm run lint
+```
+
+### Formatterの実行
+
+```bash
+npm run format
+```
+
+### 開発サーバーの起動
+
+```bash
+npm run dev
+```
+
+### ビルド
+
+```bash
+npm run build
+```
+
+### サーバー起動（本番はこのコマンドでコンテナ内で動作する）
+
+```bash
+npm run start
+```
