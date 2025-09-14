@@ -1,4 +1,5 @@
 // src/handlers/seleniumWebForm.ts
+import crypto from "node:crypto";
 import type { Context } from "hono";
 import {
   Stagehand,
@@ -7,6 +8,7 @@ import {
   type Page,
 } from "@browserbasehq/stagehand";
 import type Browserbase from "@browserbasehq/sdk";
+import { saveScreenshotToR2 } from "../features/screenshot/r2Implementation.js";
 
 /** リクエストボディ */
 interface SeleniumWebFormRequestBody {
@@ -362,6 +364,8 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
   const body = (await c.req.json()) as SeleniumWebFormRequestBody;
   if (!body?.text) return c.json({ ok: false, error: "text is required" }, 400);
 
+  const requestId = crypto.randomUUID();
+
   const openaiApiKey = process.env.OPENAI_API_KEY;
   if (!openaiApiKey) return c.json({ ok: false, error: "OPENAI_API_KEY is missing" }, 500);
 
@@ -486,8 +490,16 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
 
     // スクリーンショットを撮影（デバッグ用）
     try {
-      const screenshot = await page.screenshot({ type: "png" });
-      console.log(`[DEBUG] Screenshot captured (${screenshot.length} bytes)`);
+      const screenshotBuffer = await page.screenshot({ type: "png" });
+      console.log(`[DEBUG] Screenshot captured (${screenshotBuffer.length} bytes)`);
+
+      // エラー時のスクリーンショットもR2に保存
+      await saveScreenshotToR2(screenshotBuffer, {
+        requestId,
+        timestamp: new Date().toISOString(),
+        handlerName: "seleniumWebFormWithAgentHandler",
+        status: "error",
+      });
     } catch (screenshotError) {
       console.warn("[WARNING] Failed to capture screenshot:", screenshotError);
     }
@@ -579,6 +591,24 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
 
   await page.waitForTimeout(body.waitAfterSubmitMs ?? 2_000);
 
+  // スクリーンショット撮影（成功時）
+  const screenshotUrl = await (async (): Promise<string | null> => {
+    try {
+      const screenshotBuffer = await page.screenshot({ type: "png" });
+      const result = await saveScreenshotToR2(screenshotBuffer, {
+        requestId,
+        timestamp: new Date().toISOString(),
+        handlerName: "seleniumWebFormWithAgentHandler",
+        status: "success",
+      });
+      return result.url;
+    } catch (error) {
+      console.error("Failed to save screenshot:", error);
+      // スクリーンショット保存失敗でも処理は継続
+      return null;
+    }
+  })();
+
   const title = await page.title();
   await sh.close();
 
@@ -588,6 +618,8 @@ export async function seleniumWebFormWithAgentHandler(c: Context) {
   return c.json(
     {
       ok: mismatches.length === 0,
+      requestId,
+      screenshotUrl,
       title,
       url: currentUrl,
       assertions: { urlValuesOk: mismatches.length === 0, mismatches },
