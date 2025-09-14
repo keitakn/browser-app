@@ -1,6 +1,11 @@
 // src/handlers/seleniumWebForm.ts
 import type { Context } from "hono";
-import { Stagehand, type ConstructorParams, type LogLine, type Page } from "@browserbasehq/stagehand";
+import {
+  Stagehand,
+  type ConstructorParams,
+  type LogLine,
+  type Page,
+} from "@browserbasehq/stagehand";
 import type Browserbase from "@browserbasehq/sdk";
 
 /** リクエストボディ */
