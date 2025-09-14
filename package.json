@@ -4,8 +4,10 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "rm -rf dist/ && tsc -p tsconfig.build.json",
-    "lint": "biome lint --write .",
-    "format": "biome format --write .",
+    "lint:prettier": "prettier --check --log-level=warn '**/!(*.min|*-lock).{md,mdx}'",
+    "prettier": "prettier --write --log-level=warn '**/!(*.min|*-lock).{md,mdx}'",
+    "lint": "biome lint --write . && npm run lint:prettier",
+    "format": "biome format --write . && npm run prettier",
     "start": "node dist/index.js"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "@biomejs/biome": "2.2.4",
     "@tsconfig/node22": "22.0.2",
     "@types/node": "24.3.1",
+    "prettier": "3.6.2",
     "tsx": "4.20.5",
     "typescript": "5.9.2"
   }

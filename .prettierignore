@@ -1,0 +1,11 @@
+**/.git
+**/.svn
+**/.hg
+**/node_modules
+**/.next
+**/.react-router
+**/dist
+**/build
+**/.serena/memories
+**/.serena/cache
+biome.json
