@@ -19,8 +19,10 @@ beforeAll(async () => {
     }
     console.log("✓ Server is running on port 8080");
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "unexpected error";
+
     throw new Error(
-      `Server is not running on port 8080. Please start the server with 'npm run dev' before running tests. Error: ${error.message}`,
+      `Server is not running on port 8080. Please start the server with 'npm run dev' before running tests. Error: ${errorMessage}`,
     );
   }
 });
