@@ -10,6 +10,17 @@
 
 [mise](https://github.com/jdx/mise) などを使ってバージョン管理を出来るようにする事を推奨します。
 
+### 環境変数の設定
+
+[direnv](https://direnv.net/) などを使って環境変数を設定します。
+
+```bash
+export STAGEHAND_ENV=local
+export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
+export BROWSERBASE_PROJECT_ID="YOUR_BROWSERBASE_PROJECT_ID"
+export BROWSERBASE_API_KEY="YOUR_BROWSERBASE_API_KEY"
+```
+
 ### 依存packageのインストール
 
 以下で依存packageをインストール
