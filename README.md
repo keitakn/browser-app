@@ -19,6 +19,10 @@ export STAGEHAND_ENV=local
 export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
 export BROWSERBASE_PROJECT_ID="YOUR_BROWSERBASE_PROJECT_ID"
 export BROWSERBASE_API_KEY="YOUR_BROWSERBASE_API_KEY"
+export R2_ENDPOINT_URL=R2バケットのエンドポイントURL
+export R2_ACCESS_KEY_ID=R2アクセス キー ID
+export R2_SECRET_ACCESS_KEY=R2シークレット アクセス キー
+export R2_BUCKET_NAME="R2バケット名"
 ```
 
 ### 依存packageのインストール
