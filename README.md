@@ -1,35 +1,79 @@
-# 🤘 Welcome to Stagehand!
+# browser-app
 
-Hey! This is a project built with [Stagehand](https://github.com/browserbase/stagehand).
+[@browserbasehq/stagehand](https://github.com/browserbase/stagehand) でブラウザ操作を行う為のアプリケーションサンプルです。
 
-You can build your own web agent using: `npx create-browser-app`!
+## Getting Started
 
-## Setting the Stage
+### Node.js のインストール（既に終わっている場合は省略）
 
-Stagehand is an SDK for automating browsers. It's built on top of [Playwright](https://playwright.dev/) and provides a higher-level API for better debugging and AI fail-safes.
+22 系の最新安定版を利用する。
 
-## Curtain Call
+[mise](https://github.com/jdx/mise) などを使ってバージョン管理を出来るようにする事を推奨します。
 
-Get ready for a show-stopping development experience. Just run:
+### 依存packageのインストール
 
-```bash
-npm start
-```
-
-## What's Next?
-
-### Add your API keys
-
-Required API keys/environment variables are in the `.env.example` file. Copy it to `.env` and add your API keys.
+以下で依存packageをインストール
 
 ```bash
-cp .env.example .env && nano .env # Add your API keys to .env
+npm ci
 ```
 
-### Custom .cursorrules
+※ 初回のみ以下を実行する
 
-We have custom .cursorrules for this project. It'll help quite a bit with writing Stagehand easily.
+```bash
+npx playwright install
+```
 
-### Run on Local
+### 開発サーバー起動
 
-To run on a local browser, add your API keys to .env and change `env: "LOCAL"` to `env: "BROWSERBASE"` in [stagehand.config.ts](stagehand.config.ts).
+サーバーは [Hono](https://hono.dev/) で動作します。
+
+### 動作確認
+
+以下のリクエストを送信する事で動作確認可能です。
+
+```bash
+curl -v \
+-X POST \
+-H "Content-Type: application/json" \
+-d '
+{
+  "text": "ねこちゃん",
+  "password": "password456789",
+  "textarea": "こんにちは",
+  "select": "Two",
+  "checkDefaultCheckbox": true,
+  "radio": "checked",
+  "color": "#ffff00",
+  "date": "2025-09-12",
+  "range": 3,
+  "waitAfterSubmitMs": 2000
+}' \
+http://localhost:8080/selenium/webform | jq
+```
+
+```bash
+curl -v \
+-X POST \
+-H "Content-Type: application/json" \
+-d '
+{
+  "text": "ねこちゃん",
+  "password": "password456789",
+  "textarea": "こんにちは",
+  "select": "Two",
+  "checkDefaultCheckbox": true,
+  "radio": "checked",
+  "color": "#ffff00",
+  "date": "2025-09-12",
+  "range": 3,
+  "waitAfterSubmitMs": 2000
+}' \
+http://localhost:8080/selenium/webform/agent | jq
+```
+
+`/selenium/webform` がPlaywrightを直接使うバージョン `/selenium/webform/agent` がエージェントを使ったバージョンです。
+
+以下のSelenium公式フォームを動作確認の為に利用しています。
+
+https://www.selenium.dev/selenium/web/web-form.html
